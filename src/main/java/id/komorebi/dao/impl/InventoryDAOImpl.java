@@ -100,7 +100,6 @@ public class InventoryDAOImpl implements InventoryDAO {
 
     @Override
     public boolean checkAvailability(int menuId) throws SQLException {
-        // Query ini mengecek: Adakah bahan yang stoknya KURANG DARI kebutuhan resep?
         String sql = "SELECT COUNT(*) FROM menu_recipes r " +
                      "JOIN inventory i ON r.ingredient_id = i.ingredient_id " +
                      "WHERE r.menu_id = ? AND i.quantity < r.quantity_required";
@@ -115,57 +114,8 @@ public class InventoryDAOImpl implements InventoryDAO {
                 }
             }
         }
-        return true; // Jika tidak ada resep atau stok cukup
+        return true;
     }
-
-    // @Override
-    // public boolean reduceStockForMenu(int menuId, int quantitySold, int userId) throws SQLException {
-    //     Connection c = null;
-    //     try {
-    //         c = DBConnection.getConnection();
-    //         c.setAutoCommit(false); // Transactional Mode
-
-    //         // 1. Ambil Resep
-    //         String sqlResep = "SELECT ingredient_id, quantity_required FROM menu_recipes WHERE menu_id = ?";
-    //         try (PreparedStatement psResep = c.prepareStatement(sqlResep)) {
-    //             psResep.setInt(1, menuId);
-    //             ResultSet rs = psResep.executeQuery();
-
-    //             while (rs.next()) {
-    //                 int ingId = rs.getInt("ingredient_id");
-    //                 java.math.BigDecimal qtyNeeded = rs.getBigDecimal("quantity_required");
-    //                 // Total pengurangan = butuh * jumlah pesanan
-    //                 java.math.BigDecimal totalDeduct = qtyNeeded.multiply(new java.math.BigDecimal(quantitySold));
-
-    //                 // 2. Kurangi Stok
-    //                 String sqlUpdate = "UPDATE inventory SET quantity = quantity - ? WHERE ingredient_id = ?";
-    //                 try (PreparedStatement psUpd = c.prepareStatement(sqlUpdate)) {
-    //                     psUpd.setBigDecimal(1, totalDeduct);
-    //                     psUpd.setInt(2, ingId);
-    //                     psUpd.executeUpdate();
-    //                 }
-
-    //                 // 3. Catat Log
-    //                 String sqlLog = "INSERT INTO inventory_logs (ingredient_id, user_id, change_amount, note) VALUES (?, ?, ?, ?)";
-    //                 try (PreparedStatement psLog = c.prepareStatement(sqlLog)) {
-    //                     psLog.setInt(1, ingId);
-    //                     psLog.setInt(2, userId);
-    //                     psLog.setBigDecimal(3, totalDeduct.negate()); // Negatif karena pengurangan
-    //                     psLog.setString(4, "Order Sold (Menu ID: " + menuId + ")");
-    //                     psLog.executeUpdate();
-    //                 }
-    //             }
-    //         }
-            
-    //         c.commit();
-    //         return true;
-    //     } catch (SQLException e) {
-    //         if (c != null) c.rollback();
-    //         throw e;
-    //     } finally {
-    //         if (c != null) c.setAutoCommit(true);
-    //     }
-    // }
 
     @Override
     public List<Inventory> findAll() throws SQLException {
@@ -279,5 +229,43 @@ public class InventoryDAOImpl implements InventoryDAO {
                 rs.getString("unit"),
                 rs.getBigDecimal("min_stock"),
                 rs.getTimestamp("updated_at").toLocalDateTime());
+    }
+
+    @Override
+    public boolean checkAvailability(int menuId, int quantity) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM menu_recipes mi " + 
+                     "JOIN inventory i ON mi.ingredient_id = i.ingredient_id " +
+                     "WHERE mi.menu_id = ? AND i.quantity < (mi.quantity_required * ?)";
+        
+        // PERBAIKAN: Pakai pola 'try (Connection c = ...)' sama seperti method findById dll.
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement stmt = c.prepareStatement(sql)) {
+            
+            stmt.setInt(1, menuId);
+            stmt.setInt(2, quantity);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) == 0; 
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean reduceStockForMenu(int menuId, int quantity) throws SQLException {
+        String sql = "UPDATE inventory i " +
+                     "JOIN menu_recipes mi ON i.ingredient_id = mi.ingredient_id " +
+                     "SET i.quantity = i.quantity - (mi.quantity_required * ?) " +
+                     "WHERE mi.menu_id = ?";
+        
+        // PERBAIKAN: Pakai pola 'try (Connection c = ...)' juga disini
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement stmt = c.prepareStatement(sql)) {
+            
+            stmt.setInt(1, quantity);
+            stmt.setInt(2, menuId);
+            int rows = stmt.executeUpdate();
+            return rows > 0;
+        }
     }
 }

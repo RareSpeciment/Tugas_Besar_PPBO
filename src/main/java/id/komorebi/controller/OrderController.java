@@ -17,9 +17,33 @@ public class OrderController {
     }
 
     public int createOrder(int tableId) {
-        return service.createOrder(tableId);
+        try {
+             return service.createOrder(tableId);
+        } catch (Exception e) {
+            UIHelper.showError("Gagal membuat order: " + e.getMessage());
+            return -1;
+        }
     }
 
+    public boolean addItem(int orderId, int menuId, int qty) {
+        try {
+            boolean success = service.addItem(orderId, menuId, qty);
+            if (!success) {
+                UIHelper.showError("Gagal menambah item (Stok mungkin habis).");
+            }
+            return success;
+        } catch (RuntimeException e) {
+            UIHelper.showError(e.getMessage()); 
+            return false;
+        } catch (Exception e) {
+            UIHelper.showError("Error: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    
+    // --- Sisanya tetap sama, hanya wrapper ---
     public List<Order> getActiveOrders() {
         return service.getActiveOrders();
     }
@@ -55,19 +79,9 @@ public class OrderController {
         }
     }
 
-    public boolean addItem(int orderId, int menuId, int qty) {
-        try {
-            return service.addItem(orderId, menuId, qty);
-        } catch (Exception e) {
-            UIHelper.showError("Cannot add item: " + e.getMessage());
-        }
-        return false;
-    }
-
     public boolean updateItemStatus(int itemId, String status) {
         try {
-            service.updateItemStatus(itemId, status);
-            return true;
+            return service.updateItemStatus(itemId, status);
         } catch (Exception e) {
             UIHelper.showError("Error updating item: " + e.getMessage());
             return false;
@@ -76,8 +90,7 @@ public class OrderController {
 
     public boolean updateOrderStatus(int orderId, String status) {
         try {
-            service.updateOrderStatus(orderId, status);
-            return true;
+            return service.updateOrderStatus(orderId, status);
         } catch (Exception e) {
             UIHelper.showError("Failed: " + e.getMessage());
             return false;
@@ -86,14 +99,7 @@ public class OrderController {
 
     public boolean markOrderItemsStatus(int orderId, String status) {
         try {
-            java.util.List<OrderItem> items = service.getOrderItems(orderId);
-            if (items == null || items.isEmpty()) return false;
-            
-            boolean ok = true;
-            for (OrderItem it : items) {
-                ok &= updateItemStatus(it.getOrderItemId(), status);
-            }
-            return ok;            
+            return service.markOrderItemsStatus(orderId, status);       
         } catch (Exception e) {
             UIHelper.showError("Failed to update item statuses: " + e.getMessage());
             return false;
@@ -102,7 +108,13 @@ public class OrderController {
 
     public boolean cancelOrderItem(int itemId, int userId) {
         try {
-            return service.cancelOrderItem(itemId, userId);
+            boolean success = service.cancelOrderItem(itemId, userId);
+            if (success) {
+                UIHelper.showInfo("Item canceled & Stock restored.");
+            } else {
+                UIHelper.showError("Failed to cancel item.");
+            }
+            return success;
         } catch (Exception e) {
             UIHelper.showError("Failed to cancel item: " + e.getMessage());
             return false;

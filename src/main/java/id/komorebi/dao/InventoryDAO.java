@@ -15,4 +15,7 @@ public interface InventoryDAO {
     boolean adjustQuantity(int ingredientId, java.math.BigDecimal delta, int userId, String note) throws SQLException;
     boolean checkAvailability(int menuId) throws SQLException;
     boolean restoreStockForMenu(int menuId, int quantityRestored, int userId) throws SQLException;
+
+    boolean checkAvailability(int menuId, int quantity) throws SQLException;
+    boolean reduceStockForMenu(int menuId, int quantity) throws SQLException;
 }
