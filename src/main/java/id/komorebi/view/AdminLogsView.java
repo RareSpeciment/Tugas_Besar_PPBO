@@ -1,68 +1,3 @@
-// package id.komorebi.view;
-
-// import id.komorebi.controller.ActivityLogController;
-// import id.komorebi.model.ActivityLog;
-// import id.komorebi.util.UIHelper;
-// import javax.swing.*;
-// import javax.swing.table.DefaultTableModel;
-// import java.awt.*;
-// import java.util.List;
-
-// public class AdminLogsView extends JFrame {
-//     private final ActivityLogController controller;
-//     private JTable table;
-    
-//     public AdminLogsView(ActivityLogController controller) {
-//         this.controller = controller;
-//         UIHelper.applyFrameSettings(this, "System Logs", 900, 600);
-//         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-//         initUI();
-//     }
-
-//     private void initUI() {
-//         setLayout(new BorderLayout());
-        
-//         JPanel header = new JPanel(new FlowLayout(FlowLayout.CENTER));
-//         header.setBackground(UIHelper.PRIMARY_BROWN);
-//         JLabel title = UIHelper.createNavTitle("System Activity Logs");
-//         header.add(title);
-//         add(header, BorderLayout.NORTH);
-
-//         table = new JTable();
-//         UIHelper.styleTable(table);
-//         add(new JScrollPane(table), BorderLayout.CENTER);
-
-//         JButton refresh = UIHelper.createButton("Refresh Logs");
-//         refresh.addActionListener(e -> loadData());
-        
-//         JPanel p = new JPanel();
-//         p.setBackground(Color.WHITE);
-//         p.add(refresh);
-//         add(p, BorderLayout.SOUTH);
-
-//         loadData();
-//     }
-
-//     private void loadData() {
-//         try {
-//             List<ActivityLog> logs = controller.getAllLogs();
-//             String[] cols = { "ID", "User", "Action", "Details", "Timestamp" };
-//             DefaultTableModel model = new DefaultTableModel(cols, 0);
-            
-//             for(ActivityLog log : logs) {
-//                 model.addRow(new Object[]{
-//                     log.getLogId(),
-//                     log.getUser().getUsername(),
-//                     log.getAction(),
-//                     log.getDetails(),
-//                     log.getCreatedAt()
-//                 });
-//             }
-//             table.setModel(model);
-//         } catch(Exception e) { UIHelper.showError("Error loading logs: " + e.getMessage()); }
-//     }
-// }
-
 package id.komorebi.view;
 
 import id.komorebi.controller.ActivityLogController;
@@ -73,7 +8,6 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-// BERUBAH: extends JPanel
 public class AdminLogsView extends JPanel {
     private final ActivityLogController controller;
     private JTable table;

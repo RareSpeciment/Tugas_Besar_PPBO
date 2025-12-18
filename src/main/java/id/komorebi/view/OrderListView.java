@@ -10,7 +10,6 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-// 1. UBAH DARI JFrame MENJADI JPanel
 public class OrderListView extends JPanel {
     private final OrderController controller;
     private final id.komorebi.model.User currentUser;
@@ -33,7 +32,6 @@ public class OrderListView extends JPanel {
     private void initUI() {
         setLayout(new BorderLayout());
         
-        // Header dengan tombol Logout
         add(UIHelper.createHeaderPanel("Order Management (" + currentUser.getRole().getRoleName() + ")", e -> handleLogout()), BorderLayout.NORTH);
 
         JPanel content = new JPanel(new BorderLayout(15, 15));

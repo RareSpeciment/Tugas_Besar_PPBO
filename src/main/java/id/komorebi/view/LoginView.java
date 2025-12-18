@@ -9,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-// 1. UBAH JADI JPanel
 public class LoginView extends JPanel {
     private final AuthController controller;
     private final JTextField username = UIHelper.createTextField();
